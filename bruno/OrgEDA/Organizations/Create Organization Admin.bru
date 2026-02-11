@@ -1,0 +1,36 @@
+meta {
+  name: Create Organization Admin
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:4000/api/orgs/admins
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{super_admin_token}}
+}
+
+body:json {
+  {
+    "orgId": "2ab2009a-ffb2-472e-a0d7-30af85fdb7c1",
+    "email": "admin@acer.com",
+    "password": "password"
+  }
+}
+
+tests {
+  test("Status is 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+  
+  test("Response has user", function() {
+    expect(res.body).to.have.property('user');
+    expect(res.body.user).to.have.property('id');
+    expect(res.body.user).to.have.property('email');
+    expect(res.body.user.role).to.equal('ADMIN');
+  });
+}

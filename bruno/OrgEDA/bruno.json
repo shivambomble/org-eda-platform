@@ -1,0 +1,8 @@
+{
+  "version": "1",
+  "name": "OrgEDA",
+  "type": "collection",
+  "ignore": [
+    ".git"
+  ]
+}

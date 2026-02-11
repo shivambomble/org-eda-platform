@@ -1,0 +1,34 @@
+table:
+  name: cleaning_logs
+  schema: public
+select_permissions:
+  - role: org_admin
+    permission:
+      columns: '*'
+      filter:
+        dataset:
+          project:
+            organization:
+              id:
+                _eq: X-Hasura-Org-Id
+      allow_aggregations: true
+  - role: analyst
+    permission:
+      columns: '*'
+      filter:
+        dataset:
+          project:
+            members:
+              user_id:
+                _eq: X-Hasura-User-Id
+      allow_aggregations: true
+  - role: user
+    permission:
+      columns: '*'
+      filter:
+        dataset:
+          project:
+            members:
+              user_id:
+                _eq: X-Hasura-User-Id
+      allow_aggregations: true

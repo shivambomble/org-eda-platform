@@ -1,0 +1,542 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: OrgEDA Platform - Serverless Deployment with Lambda, S3, and RDS
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, staging, prod]
+    Description: Deployment environment
+  
+  DBSecretArn:
+    Type: String
+    Description: ARN of database credentials secret in Secrets Manager
+  
+  HasuraUrl:
+    Type: String
+    Description: Hasura GraphQL endpoint URL
+  
+  HasuraAdminSecret:
+    Type: String
+    NoEcho: true
+    Description: Hasura admin secret
+  
+  JwtSecret:
+    Type: String
+    NoEcho: true
+    Description: JWT secret for token signing (min 32 characters)
+  
+  TemporalAddress:
+    Type: String
+    Default: temporal-server:7233
+    Description: Temporal server address
+  
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Description: VPC ID for Lambda functions
+  
+  PrivateSubnetIds:
+    Type: List<AWS::EC2::Subnet::Id>
+    Description: Private subnet IDs for Lambda functions (minimum 2)
+
+Globals:
+  Function:
+    Timeout: 900
+    MemorySize: 1024
+    Runtime: nodejs20.x
+    Architectures:
+      - x86_64
+    Environment:
+      Variables:
+        ENVIRONMENT: !Ref Environment
+        DB_SECRET_ARN: !Ref DBSecretArn
+        HASURA_GRAPHQL_URL: !Ref HasuraUrl
+        HASURA_ADMIN_SECRET: !Ref HasuraAdminSecret
+        JWT_SECRET: !Ref JwtSecret
+        TEMPORAL_ADDRESS: !Ref TemporalAddress
+        S3_DATASETS_BUCKET: !Ref DatasetsBucket
+        S3_TRANSFORMED_BUCKET: !Ref TransformedDataBucket
+        STORAGE_TYPE: s3
+        AWS_REGION: !Ref AWS::Region
+    Layers:
+      - !Ref NodeDependenciesLayer
+
+Resources:
+  # ==================== Lambda Layers ====================
+  
+  NodeDependenciesLayer:
+    Type: AWS::Lambda::LayerVersion
+    Properties:
+      LayerName: !Sub 'org-eda-nodejs-deps-${Environment}'
+      Description: Node.js dependencies for OrgEDA Lambda functions
+      Content:
+        S3Bucket: !Ref LambdaArtifactsBucket
+        S3Key: nodejs-layer.zip
+      CompatibleRuntimes:
+        - nodejs20.x
+        - nodejs18.x
+
+  # ==================== API Gateway ====================
+  
+  OrgEdaApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: !Ref Environment
+      TracingEnabled: true
+      MethodSettings:
+        - ResourcePath: '/*'
+          HttpMethod: '*'
+          LoggingLevel: INFO
+          DataTraceEnabled: true
+          MetricsEnabled: true
+      Auth:
+        DefaultAuthorizer: JwtAuthorizer
+        Authorizers:
+          JwtAuthorizer:
+            FunctionArn: !GetAtt JwtAuthorizerFunction.Arn
+            Identity:
+              ReauthorizeEvery: 300
+
+  # ==================== Lambda Functions ====================
+  
+  # Auth Function
+  AuthFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub 'org-eda-auth-${Environment}'
+      CodeUri: backend/dist/auth/
+      Handler: controller.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      VpcConfig:
+        SecurityGroupIds:
+          - !Ref LambdaSecurityGroup
+        SubnetIds: !Ref PrivateSubnetIds
+      Events:
+        LoginPost:
+          Type: Api
+          Properties:
+            RestApiId: !Ref OrgEdaApi
+            Path: /auth/login
+            Method: POST
+            Auth:
+              Authorizer: NONE
+        RegisterPost:
+          Type: Api
+          Properties:
+            RestApiId: !Ref OrgEdaApi
+            Path: /auth/register
+            Method: POST
+            Auth:
+              Authorizer: NONE
+
+  # Datasets Function
+  DatasetsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub 'org-eda-datasets-${Environment}'
+      CodeUri: backend/dist/datasets/
+      Handler: controller.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Timeout: 900
+      MemorySize: 2048
+      VpcConfig:
+        SecurityGroupIds:
+          - !Ref LambdaSecurityGroup
+        SubnetIds: !Ref PrivateSubnetIds
+      Events:
+        UploadDataset:
+          Type: Api
+          Properties:
+            RestApiId: !Ref OrgEdaApi
+            Path: /datasets/upload
+            Method: POST
+        ListDatasets:
+          Type: Api
+          Properties:
+            RestApiId: !Ref OrgEdaApi
+            Path: /datasets
+            Method: GET
+        GetDataset:
+          Type: Api
+          Properties:
+            RestApiId: !Ref OrgEdaApi
+            Path: /datasets/{id}
+            Method: GET
+        DeleteDataset:
+          Type: Api
+          Properties:
+            RestApiId: !Ref OrgEdaApi
+            Path: /datasets/{id}
+            Method: DELETE
+
+  # Notes Function
+  NotesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub 'org-eda-notes-${Environment}'
+      CodeUri: backend/dist/notes/
+      Handler: controller.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      VpcConfig:
+        SecurityGroupIds:
+          - !Ref LambdaSecurityGroup
+        SubnetIds: !Ref PrivateSubnetIds
+      Events:
+        CreateNote:
+          Type: Api
+          Properties:
+            RestApiId: !Ref OrgEdaApi
+            Path: /notes
+            Method: POST
+        GetNotes:
+          Type: Api
+          Properties:
+            RestApiId: !Ref OrgEdaApi
+            Path: /notes
+            Method: GET
+        UpdateNote:
+          Type: Api
+          Properties:
+            RestApiId: !Ref OrgEdaApi
+            Path: /notes/{id}
+            Method: PUT
+        DeleteNote:
+          Type: Api
+          Properties:
+            RestApiId: !Ref OrgEdaApi
+            Path: /notes/{id}
+            Method: DELETE
+
+  # Manage Function (Projects, Users, Organizations)
+  ManageFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub 'org-eda-manage-${Environment}'
+      CodeUri: backend/dist/manage/
+      Handler: controller.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      VpcConfig:
+        SecurityGroupIds:
+          - !Ref LambdaSecurityGroup
+        SubnetIds: !Ref PrivateSubnetIds
+      Events:
+        ManageProxy:
+          Type: Api
+          Properties:
+            RestApiId: !Ref OrgEdaApi
+            Path: /manage/{proxy+}
+            Method: ANY
+
+  # Alerts Function
+  AlertsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub 'org-eda-alerts-${Environment}'
+      CodeUri: backend/dist/alerts/
+      Handler: controller.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      VpcConfig:
+        SecurityGroupIds:
+          - !Ref LambdaSecurityGroup
+        SubnetIds: !Ref PrivateSubnetIds
+      Events:
+        GetAlerts:
+          Type: Api
+          Properties:
+            RestApiId: !Ref OrgEdaApi
+            Path: /alerts
+            Method: GET
+        CreateAlert:
+          Type: Api
+          Properties:
+            RestApiId: !Ref OrgEdaApi
+            Path: /alerts
+            Method: POST
+
+  # JWT Authorizer Function
+  JwtAuthorizerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub 'org-eda-jwt-authorizer-${Environment}'
+      CodeUri: backend/dist/middleware/
+      Handler: auth.jwtAuthorizer
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Timeout: 30
+      MemorySize: 256
+
+  # ==================== S3 Buckets ====================
+  
+  LambdaArtifactsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub 'org-eda-lambda-artifacts-${AWS::AccountId}-${Environment}'
+      VersioningConfiguration:
+        Status: Enabled
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  DatasetsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub 'org-eda-datasets-${AWS::AccountId}-${Environment}'
+      VersioningConfiguration:
+        Status: Enabled
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      LifecycleConfiguration:
+        Rules:
+          - Id: DeleteOldVersions
+            NoncurrentVersionExpirationInDays: 30
+            Status: Enabled
+          - Id: TransitionToIA
+            Transitions:
+              - TransitionInDays: 90
+                StorageClass: STANDARD_IA
+            Status: Enabled
+      ServerSideEncryptionConfiguration:
+        - ServerSideEncryptionByDefault:
+            SSEAlgorithm: AES256
+
+  TransformedDataBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub 'org-eda-transformed-${AWS::AccountId}-${Environment}'
+      VersioningConfiguration:
+        Status: Enabled
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      LifecycleConfiguration:
+        Rules:
+          - Id: DeleteOldVersions
+            NoncurrentVersionExpirationInDays: 30
+            Status: Enabled
+      ServerSideEncryptionConfiguration:
+        - ServerSideEncryptionByDefault:
+            SSEAlgorithm: AES256
+
+  FrontendBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub 'org-eda-frontend-${AWS::AccountId}-${Environment}'
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: index.html
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false
+        BlockPublicPolicy: false
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
+      VersioningConfiguration:
+        Status: Enabled
+
+  FrontendBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref FrontendBucket
+      PolicyText:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: PublicReadGetObject
+            Effect: Allow
+            Principal: '*'
+            Action: 's3:GetObject'
+            Resource: !Sub '${FrontendBucket.Arn}/*'
+
+  # ==================== CloudFront ====================
+  
+  CloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        DefaultRootObject: index.html
+        HttpVersion: http2and3
+        PriceClass: PriceClass_100
+        Origins:
+          - Id: S3Origin
+            DomainName: !GetAtt FrontendBucket.RegionalDomainName
+            S3OriginConfig:
+              OriginAccessIdentity: ''
+          - Id: ApiOrigin
+            DomainName: !Sub '${OrgEdaApi}.execute-api.${AWS::Region}.amazonaws.com'
+            CustomOriginConfig:
+              HTTPPort: 80
+              HTTPSPort: 443
+              OriginProtocolPolicy: https-only
+              OriginSSLProtocols:
+                - TLSv1.2
+        DefaultCacheBehavior:
+          TargetOriginId: S3Origin
+          ViewerProtocolPolicy: redirect-to-https
+          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6
+          Compress: true
+          AllowedMethods:
+            - GET
+            - HEAD
+        CacheBehaviors:
+          - PathPattern: '/api/*'
+            TargetOriginId: ApiOrigin
+            ViewerProtocolPolicy: https-only
+            AllowedMethods:
+              - GET
+              - HEAD
+              - OPTIONS
+              - PUT
+              - POST
+              - PATCH
+              - DELETE
+            CachePolicyId: 4135ea3d-c35d-46eb-81d7-reeSJmXQQpQ
+            OriginRequestPolicyId: 216adef5-5c7f-47e4-b989-5492eafa07d3
+        CustomErrorResponses:
+          - ErrorCode: 404
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+            ErrorCachingMinTTL: 300
+          - ErrorCode: 403
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+            ErrorCachingMinTTL: 300
+        ViewerCertificate:
+          CloudFrontDefaultCertificate: true
+
+  # ==================== IAM Roles & Policies ====================
+  
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub 'org-eda-lambda-role-${Environment}'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+      Policies:
+        - PolicyName: S3Access
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 's3:GetObject'
+                  - 's3:PutObject'
+                  - 's3:DeleteObject'
+                  - 's3:ListBucket'
+                Resource:
+                  - !GetAtt DatasetsBucket.Arn
+                  - !Sub '${DatasetsBucket.Arn}/*'
+                  - !GetAtt TransformedDataBucket.Arn
+                  - !Sub '${TransformedDataBucket.Arn}/*'
+        - PolicyName: SecretsAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'secretsmanager:GetSecretValue'
+                Resource:
+                  - !Ref DBSecretArn
+        - PolicyName: CloudWatchLogs
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                Resource: 'arn:aws:logs:*:*:*'
+        - PolicyName: XRayAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'xray:PutTraceSegments'
+                  - 'xray:PutTelemetryRecords'
+                Resource: '*'
+
+  # ==================== VPC Resources ====================
+  
+  LambdaSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub 'org-eda-lambda-sg-${Environment}'
+      GroupDescription: Security group for OrgEDA Lambda functions
+      VpcId: !Ref VpcId
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+          Description: Allow all outbound traffic
+
+  # ==================== CloudWatch ====================
+  
+  ApiGatewayLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/apigateway/org-eda-${Environment}'
+      RetentionInDays: 30
+
+  LambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/org-eda-${Environment}'
+      RetentionInDays: 30
+
+  # ==================== Outputs ====================
+
+Outputs:
+  ApiEndpoint:
+    Description: API Gateway endpoint URL
+    Value: !Sub 'https://${OrgEdaApi}.execute-api.${AWS::Region}.amazonaws.com/${Environment}'
+    Export:
+      Name: !Sub 'org-eda-api-endpoint-${Environment}'
+
+  CloudFrontUrl:
+    Description: CloudFront distribution URL for frontend
+    Value: !GetAtt CloudFrontDistribution.DomainName
+    Export:
+      Name: !Sub 'org-eda-cloudfront-url-${Environment}'
+
+  DatasetsBucketName:
+    Description: S3 bucket for datasets
+    Value: !Ref DatasetsBucket
+    Export:
+      Name: !Sub 'org-eda-datasets-bucket-${Environment}'
+
+  TransformedBucketName:
+    Description: S3 bucket for transformed data
+    Value: !Ref TransformedDataBucket
+    Export:
+      Name: !Sub 'org-eda-transformed-bucket-${Environment}'
+
+  FrontendBucketName:
+    Description: S3 bucket for frontend
+    Value: !Ref FrontendBucket
+    Export:
+      Name: !Sub 'org-eda-frontend-bucket-${Environment}'
+
+  LambdaExecutionRoleArn:
+    Description: ARN of Lambda execution role
+    Value: !GetAtt LambdaExecutionRole.Arn
+    Export:
+      Name: !Sub 'org-eda-lambda-role-arn-${Environment}'
+
+  LambdaSecurityGroupId:
+    Description: Security group ID for Lambda functions
+    Value: !Ref LambdaSecurityGroup
+    Export:
+      Name: !Sub 'org-eda-lambda-sg-${Environment}'

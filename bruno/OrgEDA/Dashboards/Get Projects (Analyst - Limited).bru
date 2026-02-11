@@ -1,0 +1,35 @@
+meta {
+  name: Get Projects (Analyst - Limited)
+  type: graphql
+  seq: 3
+}
+
+post {
+  url: {{HASURA_URL}}
+  body: graphql
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{analystToken}}
+}
+
+body:graphql {
+  query GetProjects {
+    projects {
+      id
+      name
+      datasets {
+        id
+        status
+      }
+    }
+  }
+}
+
+tests {
+  test("should only return assigned projects", function() {
+    expect(res.status).to.equal(200);
+    // Analyst should only see Project Alpha (assigned)
+  });
+}

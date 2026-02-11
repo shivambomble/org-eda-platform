@@ -1,0 +1,23 @@
+meta {
+  name: Login Admin
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{API_URL}}/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "superadmin@orgeda.com",
+    "password": "password123"
+  }
+  
+}
+
+script:post-response {
+  bru.setVar("adminToken", res.body.token);
+}

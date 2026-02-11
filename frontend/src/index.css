@@ -1,0 +1,158 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Global Dark Theme */
+@layer base {
+  html {
+    @apply bg-slate-900 text-slate-100;
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 min-h-screen;
+  }
+
+  /* Smooth transitions */
+  * {
+    @apply transition-all duration-300 ease-in-out;
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    @apply w-2 h-2;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-slate-800;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-slate-600 rounded-full hover:bg-slate-500;
+  }
+}
+
+/* Animations */
+@layer utilities {
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slideInLeft {
+    from {
+      opacity: 0;
+      transform: translateX(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes slideInRight {
+    from {
+      opacity: 0;
+      transform: translateX(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes scaleIn {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% {
+      box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+    }
+    50% {
+      box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+    }
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: -1000px 0;
+    }
+    100% {
+      background-position: 1000px 0;
+    }
+  }
+
+  .animate-fadeIn {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+
+  .animate-slideInLeft {
+    animation: slideInLeft 0.5s ease-in-out;
+  }
+
+  .animate-slideInRight {
+    animation: slideInRight 0.5s ease-in-out;
+  }
+
+  .animate-scaleIn {
+    animation: scaleIn 0.3s ease-in-out;
+  }
+
+  .animate-pulse-glow {
+    animation: pulse-glow 2s infinite;
+  }
+
+  .animate-shimmer {
+    animation: shimmer 2s infinite;
+    background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%);
+    background-size: 1000px 100%;
+  }
+
+  /* Hover effects */
+  .hover-lift {
+    @apply hover:shadow-2xl hover:-translate-y-1 hover:scale-105;
+  }
+
+  .hover-glow {
+    @apply hover:shadow-lg hover:shadow-blue-500/50;
+  }
+
+  .hover-scale {
+    @apply hover:scale-110;
+  }
+
+  .hover-brighten {
+    @apply hover:brightness-110;
+  }
+
+  .card-hover {
+    @apply hover:border-slate-500 hover:shadow-xl hover:shadow-slate-700/50;
+  }
+
+  .btn-hover {
+    @apply hover:shadow-lg hover:shadow-blue-500/50 hover:-translate-y-0.5;
+  }
+
+  /* Glass morphism effect */
+  .glass {
+    @apply bg-slate-800/50 backdrop-blur-md border border-slate-700/50;
+  }
+
+  .glass-hover {
+    @apply glass hover:bg-slate-800/70 hover:border-slate-600/70;
+  }
+}

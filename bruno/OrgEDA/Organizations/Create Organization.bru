@@ -1,0 +1,33 @@
+meta {
+  name: Create Organization
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:4000/api/orgs
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{super_admin_token}}
+}
+
+body:json {
+  {
+    "name": "Acme Corporation"
+  }
+}
+
+tests {
+  test("Status is 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+  
+  test("Response has organization", function() {
+    expect(res.body).to.have.property('organization');
+    expect(res.body.organization).to.have.property('id');
+    expect(res.body.organization).to.have.property('name');
+  });
+}

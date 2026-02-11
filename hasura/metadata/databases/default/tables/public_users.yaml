@@ -1,0 +1,40 @@
+table:
+  name: users
+  schema: public
+object_relationships:
+  - name: organization
+    using:
+      foreign_key_constraint_on: org_id
+array_relationships:
+  - name: project_memberships
+    using:
+      foreign_key_constraint_on:
+        column: user_id
+        table:
+          name: project_members
+          schema: public
+select_permissions:
+  - role: analyst
+    permission:
+      columns:
+        - id
+        - email
+        - role
+        - org_id
+        - created_at
+        - updated_at
+      filter:
+        org_id:
+          _eq: X-Hasura-Org-Id
+  - role: user
+    permission:
+      columns:
+        - id
+        - email
+        - role
+        - org_id
+        - created_at
+        - updated_at
+      filter:
+        id:
+          _eq: X-Hasura-User-Id

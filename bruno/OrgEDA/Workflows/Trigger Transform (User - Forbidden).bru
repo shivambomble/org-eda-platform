@@ -1,0 +1,27 @@
+meta {
+  name: Trigger Transform (User - Forbidden)
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{API_URL}}/projects/55555555-5555-5555-5555-555555555555/datasets/REPLACE_WITH_DATASET_ID/transform
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{userToken}}
+}
+
+body:json {
+  {
+    "transformations": []
+  }
+}
+
+tests {
+  test("should return 403 Forbidden", function() {
+    expect(res.status).to.equal(403);
+  });
+}

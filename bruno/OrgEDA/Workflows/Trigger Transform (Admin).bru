@@ -1,0 +1,21 @@
+meta {
+  name: Trigger Transform (Admin)
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{API_URL}}/projects/55555555-5555-5555-5555-555555555555/datasets/REPLACE_WITH_DATASET_ID/transform
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminToken}}
+}
+
+body:json {
+  {
+    "transformations": []
+  }
+}

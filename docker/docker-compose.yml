@@ -1,0 +1,153 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:15
+    restart: always
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./init_sql:/docker-entrypoint-initdb.d
+    environment:
+      POSTGRES_PASSWORD: postgrespassword
+      POSTGRES_USER: postgres
+      POSTGRES_DB: active_check
+    ports:
+      - "5435:5432"
+    networks:
+      - org-eda-network
+
+  graphql-engine:
+    image: hasura/graphql-engine:v2.33.0
+    ports:
+      - "8081:8080"
+    depends_on:
+      - postgres
+    restart: always
+    environment:
+      HASURA_GRAPHQL_DATABASE_URL: postgres://postgres:postgrespassword@postgres:5432/active_check
+      HASURA_GRAPHQL_ENABLE_CONSOLE: "true" # set to "false" to disable console
+      HASURA_GRAPHQL_DEV_MODE: "true"
+      HASURA_GRAPHQL_ENABLED_LOG_TYPES: startup, http-log, webhook-log, websocket-log, query-log
+      HASURA_GRAPHQL_ADMIN_SECRET: myadminsecretkey
+      HASURA_GRAPHQL_JWT_SECRET: '{"type":"HS256", "key": "mysecretkeymustbeatleast32characterslong"}'
+    networks:
+      - org-eda-network
+
+  hasura-init:
+    image: curlimages/curl:latest
+    depends_on:
+      - graphql-engine
+    volumes:
+      - ./hasura-init.sh:/hasura-init.sh
+    networks:
+      - org-eda-network
+    entrypoint: ["/bin/sh", "/hasura-init.sh"]
+    restart: "no"
+
+  temporal-ui:
+    image: temporalio/ui:2.22.3
+    container_name: temporal-ui
+    depends_on:
+      - temporal-server
+    environment:
+      - TEMPORAL_ADDRESS=temporal-server:7233
+      - TEMPORAL_CORS_ORIGINS=http://localhost:3000
+    ports:
+      - "8088:8080"
+    networks:
+      - org-eda-network
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ../backend:/app
+      - /app/node_modules
+      - dataset-storage:/app/storage
+    ports:
+      - "4000:4000"
+    environment:
+      PORT: 4000
+      DATABASE_URL: postgres://postgres:postgrespassword@postgres:5432/active_check
+      JWT_SECRET: mysecretkeymustbeatleast32characterslong
+      HASURA_GRAPHQL_URL: http://graphql-engine:8080/v1/graphql
+      HASURA_ADMIN_SECRET: myadminsecretkey
+      TEMPORAL_ADDRESS: temporal-server:7233
+      STORAGE_TYPE: filesystem
+      STORAGE_PATH: /app/storage
+    depends_on:
+      - postgres
+      - graphql-engine
+      - temporal-server
+    networks:
+      - org-eda-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:4000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  temporal-worker:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile.worker
+    environment:
+      DATABASE_URL: postgres://postgres:postgrespassword@postgres:5432/active_check
+      TEMPORAL_ADDRESS: temporal-server:7233
+      STORAGE_TYPE: filesystem
+      STORAGE_PATH: /app/storage
+    volumes:
+      - dataset-storage:/app/storage
+    depends_on:
+      - postgres
+      - temporal-server
+    networks:
+      - org-eda-network
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ../frontend:/app
+      - /app/node_modules
+    ports:
+      - "3000:5173"
+    environment:
+      - VITE_API_URL=http://localhost:4000
+      - VITE_HASURA_URL=http://localhost:8081/v1/graphql
+    depends_on:
+      - backend
+      - graphql-engine
+    networks:
+      - org-eda-network
+    restart: unless-stopped
+
+  temporal-server:
+    image: temporalio/auto-setup:1.22.3
+    ports:
+      - "7233:7233"
+      - "8233:8233"
+    environment:
+      - DB=postgresql
+      - DB_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PWD=postgrespassword
+      - POSTGRES_SEEDS=postgres
+    depends_on:
+      - postgres
+    networks:
+      - org-eda-network
+    restart: unless-stopped
+
+networks:
+  org-eda-network:
+    driver: bridge
+
+volumes:
+  db_data:
+  dataset-storage:

@@ -1,0 +1,25 @@
+meta {
+  name: Get Dashboards
+  type: graphql
+  seq: 2
+}
+
+post {
+  url: {{HASURA_URL}}
+  body: graphql
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{userToken}}
+}
+
+body:graphql {
+  query GetDashboards {
+    dashboards {
+      id
+      name
+      is_public
+    }
+  }
+}

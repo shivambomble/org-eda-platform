@@ -1,0 +1,19 @@
+meta {
+  name: Upload Dataset (User)
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{API_URL}}/projects/55555555-5555-5555-5555-555555555555/datasets
+  body: multipartForm
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{userToken}}
+}
+
+body:multipart-form {
+  file: @file(/Users/shivambomble/Downloads/Shivam Workspace/CodePlayground/proj-tal/org-eda-platform/test.csv)
+}

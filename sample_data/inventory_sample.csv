@@ -1,0 +1,76 @@
+product_id,product_name,category,quantity,reorder_level,unit_price,supplier,warehouse_location,last_updated
+PRD-0001,"Laptop Dell XPS",Electronics,72,10,1200,TechCorp,WH-C,2026-01-31
+PRD-0002,"Printer Paper A4 (Ream)",Office Supplies,176,100,8,GlobalSupply,WH-A,2026-01-08
+PRD-0003,"Tool Box",Hardware,117,15,55,GlobalSupply,WH-A,2026-01-11
+PRD-0004,"Keyboard Mechanical",Electronics,108,30,80,MegaStore,WH-C,2026-01-08
+PRD-0005,"Whiteboard Markers (Set)",Office Supplies,58,60,15,GlobalSupply,WH-A,2026-01-15
+PRD-0006,"Laptop Dell XPS",Electronics,21,10,1200,MegaStore,WH-C,2026-01-30
+PRD-0007,"Antivirus Suite",Software,187,30,60,OfficeMax,WH-C,2026-01-18
+PRD-0008,"Project Management Tool",Software,88,10,200,OfficeMax,WH-C,2026-01-20
+PRD-0009,"Whiteboard Markers (Set)",Office Supplies,63,60,15,OfficeMax,WH-A,2026-01-12
+PRD-0010,"Antivirus Suite",Software,83,30,60,TechCorp,WH-C,2026-01-31
+PRD-0011,"Bookshelf 5-Tier",Furniture,176,10,150,DirectImports,WH-B,2026-01-12
+PRD-0012,"Sticky Notes Pack",Office Supplies,30,150,5,OfficeMax,WH-B,2026-01-07
+PRD-0013,"Power Drill",Hardware,86,10,120,TechCorp,WH-C,2026-02-03
+PRD-0014,"Ballpoint Pens (Box of 50)",Office Supplies,101,80,12,MegaStore,WH-B,2026-02-03
+PRD-0015,"Tool Box",Hardware,181,15,55,TechCorp,WH-C,2026-01-12
+PRD-0016,"Sticky Notes Pack",Office Supplies,37,150,5,DirectImports,WH-C,2026-01-26
+PRD-0017,"Ballpoint Pens (Box of 50)",Office Supplies,194,80,12,GlobalSupply,WH-A,2026-01-11
+PRD-0018,"Office 365 License",Software,78,20,150,OfficeMax,WH-B,2026-01-22
+PRD-0019,"Stapler Heavy Duty",Office Supplies,28,25,18,OfficeMax,WH-C,2026-01-15
+PRD-0020,"Monitor 27inch",Electronics,66,15,350,DirectImports,WH-A,2026-01-16
+PRD-0021,"Stapler Heavy Duty",Office Supplies,118,25,18,DirectImports,WH-B,2026-01-13
+PRD-0022,"Stapler Heavy Duty",Office Supplies,7,25,18,MegaStore,WH-A,2026-01-11
+PRD-0023,"Project Management Tool",Software,158,10,200,TechCorp,WH-C,2026-01-17
+PRD-0024,"Monitor 27inch",Electronics,193,15,350,OfficeMax,WH-C,2026-01-16
+PRD-0025,"Printer Paper A4 (Ream)",Office Supplies,194,100,8,MegaStore,WH-B,2026-01-15
+PRD-0026,"Screwdriver Set",Hardware,96,20,35,OfficeMax,WH-C,2026-01-06
+PRD-0027,"USB-C Hub",Electronics,114,40,45,DirectImports,WH-A,2026-01-07
+PRD-0028,"Stapler Heavy Duty",Office Supplies,84,25,18,DirectImports,WH-B,2026-01-18
+PRD-0029,"Monitor 27inch",Electronics,72,15,350,MegaStore,WH-B,2026-01-07
+PRD-0030,"Stapler Heavy Duty",Office Supplies,72,25,18,DirectImports,WH-A,2026-02-01
+PRD-0031,"Antivirus Suite",Software,109,30,60,GlobalSupply,WH-B,2026-01-24
+PRD-0032,"Keyboard Mechanical",Electronics,139,30,80,MegaStore,WH-B,2026-01-31
+PRD-0033,"Office 365 License",Software,27,20,150,MegaStore,WH-C,2026-01-06
+PRD-0034,"USB-C Hub",Electronics,18,40,45,DirectImports,WH-C,2026-01-26
+PRD-0035,"USB-C Hub",Electronics,166,40,45,TechCorp,WH-C,2026-01-20
+PRD-0036,"Antivirus Suite",Software,52,30,60,OfficeMax,WH-C,2026-01-29
+PRD-0037,"Whiteboard Markers (Set)",Office Supplies,9,60,15,MegaStore,WH-A,2026-02-01
+PRD-0038,"Monitor 27inch",Electronics,162,15,350,GlobalSupply,WH-A,2026-01-16
+PRD-0039,"Project Management Tool",Software,79,10,200,GlobalSupply,WH-A,2026-01-05
+PRD-0040,"Stapler Heavy Duty",Office Supplies,64,25,18,GlobalSupply,WH-B,2026-01-23
+PRD-0041,"Tool Box",Hardware,146,15,55,MegaStore,WH-A,2026-01-21
+PRD-0042,"Whiteboard Markers (Set)",Office Supplies,91,60,15,GlobalSupply,WH-B,2026-01-06
+PRD-0043,"Monitor 27inch",Electronics,103,15,350,DirectImports,WH-B,2026-01-28
+PRD-0044,"Printer Paper A4 (Ream)",Office Supplies,56,100,8,MegaStore,WH-C,2026-01-28
+PRD-0045,"Tool Box",Hardware,128,15,55,OfficeMax,WH-A,2026-01-23
+PRD-0046,"Filing Cabinet",Furniture,167,8,200,GlobalSupply,WH-A,2026-01-28
+PRD-0047,"Sticky Notes Pack",Office Supplies,181,150,5,OfficeMax,WH-C,2026-01-29
+PRD-0048,"Project Management Tool",Software,200,10,200,GlobalSupply,WH-B,2026-01-18
+PRD-0049,"Monitor 27inch",Electronics,155,15,350,TechCorp,WH-C,2026-01-16
+PRD-0050,"Whiteboard Markers (Set)",Office Supplies,8,60,15,TechCorp,WH-C,2026-01-25
+PRD-0051,"Keyboard Mechanical",Electronics,173,30,80,MegaStore,WH-A,2026-01-23
+PRD-0052,"Screwdriver Set",Hardware,197,20,35,GlobalSupply,WH-B,2026-01-07
+PRD-0053,"Whiteboard Markers (Set)",Office Supplies,52,60,15,GlobalSupply,WH-A,2026-01-31
+PRD-0054,"Laptop Dell XPS",Electronics,173,10,1200,DirectImports,WH-B,2026-01-14
+PRD-0055,"Antivirus Suite",Software,186,30,60,DirectImports,WH-C,2026-01-29
+PRD-0056,"Keyboard Mechanical",Electronics,84,30,80,DirectImports,WH-A,2026-01-08
+PRD-0057,"Tool Box",Hardware,197,15,55,MegaStore,WH-B,2026-01-30
+PRD-0058,"Standing Desk",Furniture,148,3,600,DirectImports,WH-C,2026-01-09
+PRD-0059,"Laptop Dell XPS",Electronics,124,10,1200,OfficeMax,WH-A,2026-01-09
+PRD-0060,"Bookshelf 5-Tier",Furniture,23,10,150,DirectImports,WH-C,2026-01-24
+PRD-0061,"Project Management Tool",Software,5,10,200,MegaStore,WH-C,2026-01-29
+PRD-0062,"Ballpoint Pens (Box of 50)",Office Supplies,138,80,12,GlobalSupply,WH-A,2026-01-31
+PRD-0063,"Antivirus Suite",Software,103,30,60,GlobalSupply,WH-A,2026-01-08
+PRD-0064,"Office Chair Ergonomic",Furniture,48,5,450,OfficeMax,WH-B,2026-01-05
+PRD-0065,"Office Chair Ergonomic",Furniture,68,5,450,OfficeMax,WH-C,2026-02-02
+PRD-0066,"Printer Paper A4 (Ream)",Office Supplies,101,100,8,OfficeMax,WH-B,2026-01-13
+PRD-0067,"Ballpoint Pens (Box of 50)",Office Supplies,116,80,12,GlobalSupply,WH-A,2026-01-07
+PRD-0068,"Whiteboard Markers (Set)",Office Supplies,177,60,15,GlobalSupply,WH-A,2026-01-13
+PRD-0069,"Filing Cabinet",Furniture,188,8,200,MegaStore,WH-A,2026-01-17
+PRD-0070,"Filing Cabinet",Furniture,199,8,200,MegaStore,WH-C,2026-01-08
+PRD-0071,"Tool Box",Hardware,174,15,55,OfficeMax,WH-B,2026-01-12
+PRD-0072,"USB-C Hub",Electronics,183,40,45,GlobalSupply,WH-B,2026-01-10
+PRD-0073,"Screwdriver Set",Hardware,105,20,35,MegaStore,WH-B,2026-01-29
+PRD-0074,"Office Chair Ergonomic",Furniture,192,5,450,GlobalSupply,WH-C,2026-02-02
+PRD-0075,"Stapler Heavy Duty",Office Supplies,76,25,18,MegaStore,WH-C,2026-01-11

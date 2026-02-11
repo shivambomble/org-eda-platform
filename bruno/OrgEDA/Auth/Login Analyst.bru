@@ -1,0 +1,22 @@
+meta {
+  name: Login Analyst
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{API_URL}}/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "{{ANALYST_EMAIL}}",
+    "password": "{{PASSWORD}}"
+  }
+}
+
+script:post-response {
+  bru.setVar("analystToken", res.body.token);
+}

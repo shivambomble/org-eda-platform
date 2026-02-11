@@ -1,0 +1,28 @@
+meta {
+  name: Get Projects
+  type: graphql
+  seq: 1
+}
+
+post {
+  url: {{HASURA_URL}}
+  body: graphql
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminToken}}
+}
+
+body:graphql {
+  query GetProjects {
+    projects {
+      id
+      name
+      datasets {
+        id
+        status
+      }
+    }
+  }
+}

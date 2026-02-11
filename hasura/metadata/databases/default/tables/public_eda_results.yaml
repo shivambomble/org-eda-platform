@@ -1,0 +1,37 @@
+table:
+  name: eda_results
+  schema: public
+object_relationships:
+  - name: dataset
+    using:
+      foreign_key_constraint_on: dataset_id
+select_permissions:
+  - role: org_admin
+    permission:
+      columns:
+        - results
+        - created_at
+        - dataset_id
+        - id
+      filter:
+        dataset:
+          project:
+            organization:
+              id:
+                _eq: X-Hasura-Org-Id
+      allow_aggregations: true
+  - role: analyst
+    permission:
+      columns:
+        - results
+        - created_at
+        - dataset_id
+        - id
+      filter:
+        dataset:
+          project:
+            members:
+              user_id:
+                _eq: X-Hasura-User-Id
+      allow_aggregations: true
+    comment: ""

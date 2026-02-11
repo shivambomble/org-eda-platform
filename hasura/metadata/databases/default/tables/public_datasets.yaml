@@ -1,0 +1,85 @@
+table:
+  name: datasets
+  schema: public
+object_relationships:
+  - name: project
+    using:
+      foreign_key_constraint_on: project_id
+  - name: uploader
+    using:
+      foreign_key_constraint_on: uploaded_by
+array_relationships:
+  - name: eda_results
+    using:
+      foreign_key_constraint_on:
+        column: dataset_id
+        table:
+          name: eda_results
+          schema: public
+  - name: cleaning_logs
+    using:
+      foreign_key_constraint_on:
+        column: dataset_id
+        table:
+          name: cleaning_logs
+          schema: public
+select_permissions:
+  - role: org_admin
+    permission:
+      columns: '*'
+      filter:
+        project:
+          organization:
+            id:
+              _eq: X-Hasura-Org-Id
+      allow_aggregations: true
+  - role: analyst
+    permission:
+      columns: '*'
+      filter:
+        project:
+          members:
+            user_id:
+              _eq: X-Hasura-User-Id
+      allow_aggregations: true
+  - role: user
+    permission:
+      columns: '*'
+      filter:
+        project:
+          members:
+            user_id:
+              _eq: X-Hasura-User-Id
+      allow_aggregations: true
+insert_permissions:
+  - role: org_admin
+    permission:
+      columns:
+        - file_name
+        - project_id
+        - s3_path
+        - size_bytes
+        - status
+        - uploaded_by
+        - metadata
+      check:
+        project:
+          organization:
+            id:
+              _eq: X-Hasura-Org-Id
+  - role: analyst
+    permission:
+      columns:
+        - file_name
+        - project_id
+        - s3_path
+        - size_bytes
+        - status
+        - uploaded_by
+        - metadata
+      check:
+        project:
+          members:
+            user_id:
+              _eq: X-Hasura-User-Id
+update_permissions:

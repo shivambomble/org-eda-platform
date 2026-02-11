@@ -1,0 +1,72 @@
+table:
+  name: projects
+  schema: public
+object_relationships:
+  - name: organization
+    using:
+      foreign_key_constraint_on: org_id
+array_relationships:
+  - name: dashboards
+    using:
+      foreign_key_constraint_on:
+        column: project_id
+        table:
+          name: dashboards
+          schema: public
+  - name: datasets
+    using:
+      foreign_key_constraint_on:
+        column: project_id
+        table:
+          name: datasets
+          schema: public
+  - name: members
+    using:
+      foreign_key_constraint_on:
+        column: project_id
+        table:
+          name: project_members
+          schema: public
+select_permissions:
+  - role: org_admin
+    permission:
+      columns:
+        - id
+        - name
+        - org_id
+        - created_at
+        - updated_at
+      filter:
+        organization:
+          id:
+            _eq: X-Hasura-Org-Id
+      allow_aggregations: true
+  - role: analyst
+    permission:
+      columns:
+        - id
+        - name
+        - org_id
+        - created_at
+        - updated_at
+      filter:
+        members:
+          user_id:
+            _eq: X-Hasura-User-Id
+      allow_aggregations: true
+  - role: user
+    permission:
+      columns:
+        - id
+        - name
+        - org_id
+        - created_at
+        - updated_at
+      filter:
+        members:
+          user_id:
+            _eq: X-Hasura-User-Id
+      allow_aggregations: true
+insert_permissions:
+update_permissions:
+delete_permissions:
