@@ -13,7 +13,7 @@ async function run() {
     activities,
     taskQueue: process.env.TEMPORAL_TASK_QUEUE || 'cleaning-queue',
     // Increase max concurrent activities to handle parallel processing
-    maxConcurrentActivityExecutions: parseInt(process.env.MAX_CONCURRENT_ACTIVITIES || '10'),
+    maxConcurrentActivityTaskExecutions: parseInt(process.env.MAX_CONCURRENT_ACTIVITIES || '10'),
     // Increase max concurrent workflows
     maxConcurrentWorkflowTaskExecutions: parseInt(process.env.MAX_CONCURRENT_WORKFLOWS || '5'),
   });

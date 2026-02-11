@@ -72,3 +72,5 @@ upload.json
 # Database files
 *.db
 *.sqlite
+
+DEPLOY_AL2023.md
