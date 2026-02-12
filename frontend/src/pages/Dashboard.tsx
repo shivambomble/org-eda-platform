@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer, Legend, LineChart, Line } from 'recharts';
-import { TrendingUp, Package, AlertTriangle, DollarSign, RefreshCw, Download, Filter, ChevronDown } from 'lucide-react';
+import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from 'recharts';
+import { TrendingUp, Package, AlertTriangle, DollarSign, RefreshCw, ChevronDown } from 'lucide-react';
 import axios from 'axios';
 import AlertButton from '../components/alerts/AlertButton';
 import { getToken } from '../lib/auth';

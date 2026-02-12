@@ -24,7 +24,6 @@ interface User {
 const ProjectMembers = ({ projectId }: ProjectMembersProps) => {
   const [members, setMembers] = useState<Member[]>([]);
   const [availableUsers, setAvailableUsers] = useState<User[]>([]);
-  const [selectedUserId, setSelectedUserId] = useState("");
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -87,7 +86,6 @@ const ProjectMembers = ({ projectId }: ProjectMembersProps) => {
 
   const handleSelectUser = (user: User) => {
     setEmail(user.email);
-    setSelectedUserId(user.id);
     setShowDropdown(false);
   };
 
@@ -107,7 +105,6 @@ const ProjectMembers = ({ projectId }: ProjectMembersProps) => {
         }
       );
       setEmail("");
-      setSelectedUserId("");
       setAvailableUsers([]);
       fetchMembers();
     } catch (err: any) {
