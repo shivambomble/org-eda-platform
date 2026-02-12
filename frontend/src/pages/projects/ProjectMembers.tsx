@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { getToken } from "../../lib/auth";
 import { Button } from "../../components/ui/Button";
-import { UserPlus, X, Mail, Users } from "lucide-react";
+import { X, Mail, Users } from "lucide-react";
 
 interface ProjectMembersProps {
   projectId: string;
