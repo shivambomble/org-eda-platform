@@ -87,7 +87,7 @@ const NotesPanel: React.FC = () => {
         return;
       }
 
-      const response = await fetch('http://localhost:4000/api/notes', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/notes`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

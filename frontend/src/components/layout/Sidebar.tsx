@@ -116,7 +116,7 @@ const Sidebar = () => {
         const token = localStorage.getItem("token");
         if (!token) return;
 
-        const response = await fetch("http://localhost:4000/api/projects", {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/projects`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         
