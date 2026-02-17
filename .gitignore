@@ -73,4 +73,5 @@ upload.json
 *.db
 *.sqlite
 
-DEPLOY_AL2023.md
+start-all-instances.sh
+stop-all-instances.sh
