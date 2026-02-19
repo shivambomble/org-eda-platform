@@ -50,12 +50,12 @@ export const searchInventoryData = async (req: AuthRequest, res: Response) => {
       }
     }
 
-    // Get the latest EDA results for the project
+    // Get the latest EDA results for the project (excluding soft-deleted datasets)
     const edaRes = await query(
       `SELECT er.results 
        FROM eda_results er
        JOIN datasets d ON er.dataset_id = d.id
-       WHERE d.project_id = $1
+       WHERE d.project_id = $1 AND d.deleted_at IS NULL
        ORDER BY er.created_at DESC
        LIMIT 1`,
       [projectId]
@@ -213,7 +213,7 @@ export const getProductDetails = async (req: AuthRequest, res: Response) => {
       `SELECT er.results 
        FROM eda_results er
        JOIN datasets d ON er.dataset_id = d.id
-       WHERE d.project_id = $1
+       WHERE d.project_id = $1 AND d.deleted_at IS NULL
        ORDER BY er.created_at DESC
        LIMIT 1`,
       [projectId]
@@ -336,7 +336,7 @@ export const getCategoryDetails = async (req: AuthRequest, res: Response) => {
       `SELECT er.results 
        FROM eda_results er
        JOIN datasets d ON er.dataset_id = d.id
-       WHERE d.project_id = $1
+       WHERE d.project_id = $1 AND d.deleted_at IS NULL
        ORDER BY er.created_at DESC
        LIMIT 1`,
       [projectId]
@@ -457,7 +457,7 @@ export const getSupplierDetails = async (req: AuthRequest, res: Response) => {
       `SELECT er.results 
        FROM eda_results er
        JOIN datasets d ON er.dataset_id = d.id
-       WHERE d.project_id = $1
+       WHERE d.project_id = $1 AND d.deleted_at IS NULL
        ORDER BY er.created_at DESC
        LIMIT 1`,
       [projectId]

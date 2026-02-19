@@ -88,13 +88,11 @@ export const deleteDataset = async (req: AuthRequest, res: Response) => {
   const { projectId, datasetId } = req.params;
 
   try {
-    // Get dataset info
-    const dsRes = await query('SELECT * FROM datasets WHERE id = $1 AND project_id = $2', [datasetId, projectId]);
+    // Get dataset info (only non-deleted datasets)
+    const dsRes = await query('SELECT * FROM datasets WHERE id = $1 AND project_id = $2 AND deleted_at IS NULL', [datasetId, projectId]);
     if (dsRes.rows.length === 0) {
       return res.status(404).json({ message: 'Dataset not found' });
     }
-
-    const dataset = dsRes.rows[0];
 
     // Get project org_id
     const projRes = await query('SELECT org_id FROM projects WHERE id = $1', [projectId]);
@@ -124,13 +122,63 @@ export const deleteDataset = async (req: AuthRequest, res: Response) => {
       return res.status(403).json({ message: 'Forbidden: Only Admin and Analyst can delete datasets' });
     }
 
-    // Delete dataset record (cascade will handle related records)
-    await query('DELETE FROM datasets WHERE id = $1', [datasetId]);
+    // Soft delete: Mark as deleted instead of hard delete
+    const deleteRes = await query(
+      'UPDATE datasets SET deleted_at = NOW(), updated_at = NOW() WHERE id = $1 RETURNING id',
+      [datasetId]
+    );
+    
+    if (deleteRes.rows.length === 0) {
+      return res.status(500).json({ message: 'Failed to delete dataset' });
+    }
 
+    console.log(`Dataset ${datasetId} soft deleted successfully`);
     res.json({ message: 'Dataset deleted successfully', datasetId });
 
   } catch (error) {
     console.error('Delete Dataset Error:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+export const restoreDataset = async (req: AuthRequest, res: Response) => {
+  const { projectId, datasetId } = req.params;
+
+  try {
+    // Get soft-deleted dataset info
+    const dsRes = await query('SELECT * FROM datasets WHERE id = $1 AND project_id = $2 AND deleted_at IS NOT NULL', [datasetId, projectId]);
+    if (dsRes.rows.length === 0) {
+      return res.status(404).json({ message: 'Deleted dataset not found' });
+    }
+
+    // Get project org_id
+    const projRes = await query('SELECT org_id FROM projects WHERE id = $1', [projectId]);
+    if (projRes.rows.length === 0) {
+      return res.status(404).json({ message: 'Project not found' });
+    }
+    const projectOrgId = projRes.rows[0].org_id;
+
+    // Access Control: Only Admin can restore
+    const { role, org_id } = req.user!;
+    if (role !== 'ADMIN' || org_id !== projectOrgId) {
+      return res.status(403).json({ message: 'Forbidden: Only Admin can restore datasets' });
+    }
+
+    // Restore dataset
+    const restoreRes = await query(
+      'UPDATE datasets SET deleted_at = NULL, updated_at = NOW() WHERE id = $1 RETURNING id',
+      [datasetId]
+    );
+    
+    if (restoreRes.rows.length === 0) {
+      return res.status(500).json({ message: 'Failed to restore dataset' });
+    }
+
+    console.log(`Dataset ${datasetId} restored successfully`);
+    res.json({ message: 'Dataset restored successfully', datasetId });
+
+  } catch (error) {
+    console.error('Restore Dataset Error:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 };

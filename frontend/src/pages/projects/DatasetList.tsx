@@ -27,11 +27,13 @@ const DatasetList = ({ datasets, projectId, refresh, canDelete }: any) => {
       return;
     }
     try {
-      await axios.delete(
+      const response = await axios.delete(
         `${API_URL}/api/projects/${projectId}/datasets/${datasetId}`,
         { headers: { Authorization: `Bearer ${getToken()}` } }
       );
-      refresh();
+      console.log('Delete response:', response.data);
+      // Force refresh after delete
+      setTimeout(() => refresh(), 500);
     } catch (err) {
       console.error("Delete failed", err);
       alert("Failed to delete dataset");

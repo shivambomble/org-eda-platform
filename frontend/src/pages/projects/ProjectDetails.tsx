@@ -1,5 +1,5 @@
 import { useParams } from "react-router-dom";
-import { useQuery, gql } from "@apollo/client";
+import { useQuery, gql, useApolloClient } from "@apollo/client";
 import { ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "../../components/ui/Button";
@@ -25,10 +25,19 @@ const GET_PROJECT_DETAILS = gql`
 
 const ProjectDetails = () => {
   const { id } = useParams();
+  const client = useApolloClient();
   const { loading, error, data, refetch } = useQuery(GET_PROJECT_DETAILS, {
     variables: { id },
     pollInterval: 5000, // Poll every 5s for status updates
   });
+
+  const handleRefresh = async () => {
+    // Clear Apollo cache for this query
+    await client.cache.evict({ id: `projects_by_pk:${id}` });
+    await client.cache.gc();
+    // Then refetch
+    await refetch();
+  };
 
   if (loading) return <div className="p-8">Loading project...</div>;
   if (error) return <div className="p-8 text-red-500">Error: {error.message}</div>;
@@ -59,10 +68,10 @@ const ProjectDetails = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-6 animate-slideInLeft">
-           <DatasetList datasets={project.datasets} projectId={project.id} refresh={refetch} canDelete={canUpload} />
+           <DatasetList datasets={project.datasets} projectId={project.id} refresh={handleRefresh} canDelete={canUpload} />
         </div>
         <div className="space-y-6 animate-slideInRight">
-           {canUpload && <DatasetUpload projectId={project.id} onUploadSuccess={refetch} />}
+           {canUpload && <DatasetUpload projectId={project.id} onUploadSuccess={handleRefresh} />}
            {(isAdmin || isAnalyst) && (
              <div>
                <ProjectMembers projectId={project.id} />

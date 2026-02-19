@@ -16,8 +16,8 @@ export const transformDataset = async (req: AuthRequest, res: Response) => {
         // 1. Check Permissions (Admin or Analyst assigned)
         const { role, org_id, id: userId } = req.user!;
         
-        // Fetch Dataset to check status and project
-        const dsRes = await query('SELECT * FROM datasets WHERE id = $1', [datasetId]);
+        // Fetch Dataset to check status and project (excluding soft-deleted)
+        const dsRes = await query('SELECT * FROM datasets WHERE id = $1 AND deleted_at IS NULL', [datasetId]);
         if (dsRes.rows.length === 0) {
             return res.status(404).json({ message: 'Dataset not found' });
         }
