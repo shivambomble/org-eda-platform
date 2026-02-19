@@ -63,7 +63,7 @@ const UserManagement: React.FC = () => {
   }, []);
 
   // Create user
-  const handleCreateUser = async (e: React.FormEvent) => {
+  const handleCreateUser = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     setError('');
@@ -122,7 +122,7 @@ const UserManagement: React.FC = () => {
   };
 
   // Reset password
-  const handleResetPassword = async (e: React.FormEvent) => {
+  const handleResetPassword = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (resetData.newPassword !== resetData.confirmPassword) {
