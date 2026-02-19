@@ -12,7 +12,7 @@ const GET_PROJECT_DETAILS = gql`
     projects_by_pk(id: $id) {
       id
       name
-      datasets(order_by: {created_at: desc}) {
+      datasets(where: {deleted_at: {_is_null: true}}, order_by: {created_at: desc}) {
         id
         file_name
         size_bytes
